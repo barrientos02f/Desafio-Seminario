@@ -16,7 +16,7 @@
     <!-- INTRO -->
     <div id="intro">
       <p class="mb-4 text-lg">Pon a prueba tus conocimientos sobre muestreo, población e intervalos de confianza. ¡Responde correctamente, gana puntos y domina los cálculos!</p>
-      <button onclick="startGame()" class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition">Comenzar</button>
+      <button id="startBtn" class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition">Comenzar</button>
     </div>
 
     <!-- QUIZ -->
@@ -51,9 +51,9 @@
 
       <!-- Ejercicio 2 -->
       <div class="bg-gray-100 p-4 rounded-xl mb-6">
-        <h3 class="font-semibold mb-2">2️⃣ Intervalo de confianza</h3>
+        <h3 class="font-semibold mb-2">2️⃣ Intervalo de confianza (total)</h3>
         <p class="text-sm mb-2">Datos: p = 0.6, n = 100, Z = 1.96</p>
-        <p class="text-sm mb-4 italic">Fórmula: IC = 2 × Z × √(p(1−p)/n)</p>
+        <p class="text-sm mb-4 italic">Fórmula (IC total): IC = 2 × Z × √(p(1−p)/n)</p>
         <input id="respuestaIC" type="number" step="0.001" placeholder="Escribe el valor del intervalo de confianza total" class="p-2 border rounded w-full mb-2">
         <button onclick="checkICAnswer()" class="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition">Comprobar</button>
         <p id="feedbackIC" class="mt-2 font-semibold"></p>
@@ -113,6 +113,7 @@
   </div>
 
   <script>
+    // Preguntas del quiz
     const questions = [
       { question: '¿Qué diferencia principal existe entre censo y muestreo?', options: ['El censo estudia solo una parte de la población','El muestreo abarca toda la población','El censo analiza a todos los individuos, el muestreo solo una parte'], answer: 2 },
       { question: 'En un estudio con 2000 pacientes, si se eligen 200 al azar, el método usado es:', options: ['Muestreo aleatorio simple','Muestreo sistemático','Muestreo por conglomerados'], answer: 0 },
@@ -125,6 +126,12 @@
     let score = 0;
     let timer;
     const timePerQuestion = 20;
+
+    // Asignar evento al botón iniciar (evita uso de onclick inline)
+    document.addEventListener('DOMContentLoaded', () => {
+      const startBtn = document.getElementById('startBtn');
+      startBtn.addEventListener('click', startGame);
+    });
 
     function startGame() {
       score = 0;
@@ -215,6 +222,7 @@
         5: { N: 10000, p: 0.8, Z: 1.96, E: 0.02 }
       };
       const e = exercises[num];
+      if (!e) return;
       const q = 1 - e.p;
       const n = (e.Z ** 2 * e.p * q * e.N) / ((e.E ** 2 * (e.N - 1)) + (e.Z ** 2 * e.p * q));
       const nCalc = Math.round(n);
@@ -224,15 +232,17 @@
       const diff = Math.abs(respuesta - nCalc);
       if (diff <= 10) {
         feedback.textContent = `✅ Correcto (+15 puntos). Valor teórico: ${nCalc}`;
+        feedback.classList.remove('text-red-600');
         feedback.classList.add('text-green-600');
         score += 15;
       } else {
         feedback.textContent = `❌ Incorrecto. Valor teórico: ${nCalc}`;
+        feedback.classList.remove('text-green-600');
         feedback.classList.add('text-red-600');
       }
     }
 
-    // ✅ INTERVALO DE CONFIANZA TOTAL
+    // ✅ INTERVALO DE CONFIANZA TOTAL (usuario ingresa solo el valor total del IC)
     function checkICAnswer() {
       const p = 0.6, n = 100, Z = 1.96;
       const respuesta = parseFloat(document.getElementById('respuestaIC').value);
@@ -243,10 +253,12 @@
       const diff = Math.abs(respuesta - IC);
       if (diff < 0.01) {
         feedback.textContent = `✅ Correcto (+15 puntos). IC total: ${IC}`;
+        feedback.classList.remove('text-red-600');
         feedback.classList.add('text-green-600');
         score += 15;
       } else {
         feedback.textContent = `❌ Incorrecto. El intervalo correcto es: ${IC}`;
+        feedback.classList.remove('text-green-600');
         feedback.classList.add('text-red-600');
       }
     }
@@ -262,11 +274,9 @@
 
     function renderChart() {
       const ctx = document.getElementById('chart');
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Preguntas', 'Ejercicios'],
-          datasets: [{
-            label: 'Puntaje obtenido',
-            data: [Math
+      // destruir instancia previa si existe (evita múltiples gráficos)
+      if (ctx._chartInstance) ctx._chartInstance.destroy();
+      ctx._chartInstance = new Chart(ctx, {
+        type: '
+
 
